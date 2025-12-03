@@ -66,6 +66,11 @@ class Header
      */
     public $length;
 
+    /**
+     * @var string
+     */
+    public $backlist;
+
     public function __construct(array $properties = [])
     {
         foreach ($properties as $property => $value) {
