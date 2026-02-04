@@ -44,53 +44,22 @@ jobs:
         with:
           dependency-versions: ${{ matrix.dependencies }}
 
-      - name: Install Codeclimate binary
-        run: |
-          curl -L -f https://codeclimate.com/downloads/test-reporter/test-reporter-0.11.1-linux-amd64 > ./cc-test-reporter
-          chmod +x ./cc-test-reporter
-
-      - name: Run Codeclimate before-build
-        run: ./cc-test-reporter before-build
-
       - name: Run PHPUnit
         run: vendor/bin/phpunit --coverage-clover=clover.xml
 
-      - name: Upload clover artifact
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }} # Token nájdeš v nastaveniach Codecov.io
+          files: ./clover.xml
+          flags: php-${{ matrix.php-version }}
+          fail_ci_if_error: true
+
+      - name: Upload clover artifact for Coveralls
         uses: actions/upload-artifact@v4
         with:
           name: clover-${{ matrix.php-version }}-${{ matrix.dependencies }}
           path: clover.xml
-
-      - name: Run Codeclimate format-coverage
-        run: ./cc-test-reporter format-coverage -o codeclimate.json -t clover clover.xml
-
-      - name: Upload codeclimate artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: cc-${{ matrix.php-version }}-${{ matrix.dependencies }}
-          path: codeclimate.json
-
-  codeclimate-upload:
-    name: Upload coverage to Codeclimate
-    runs-on: ubuntu-latest
-    needs: phpunit
-    env:
-      CC_TEST_REPORTER_ID: e33b74ed1f59947df361652193b6575db0afc663dcbc73af89a0cf16f2443d24
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: coverage
-
-      - name: Install Codeclimate binary
-        run: |
-          curl -L -f https://codeclimate.com/downloads/test-reporter/test-reporter-0.11.1-linux-amd64 > ./cc-test-reporter
-          chmod +x ./cc-test-reporter
-
-      - name: Upload to Codeclimate
-        run: |
-          ./cc-test-reporter sum-coverage coverage/cc-*/codeclimate.json -p 6
-          ./cc-test-reporter upload-coverage
 
   coveralls-upload:
     name: Upload coverage to Coveralls
@@ -114,7 +83,4 @@ jobs:
       - name: Install php-coveralls
         run: composer global require php-coveralls/php-coveralls
 
-      - name: Upload coverage results to Coveralls
-        env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: php-coveralls --coverage_clover="build/logs/clover-*/clover.xml" -v
+      -
