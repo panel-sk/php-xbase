@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - master
+      - '*'
 
 jobs:
   phpstan:
@@ -50,12 +51,11 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
-          token: ${{ secrets.CODECOV_TOKEN }} # Token nájdeš v nastaveniach Codecov.io
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: ./clover.xml
-          flags: php-${{ matrix.php-version }}
-          fail_ci_if_error: true
+          fail_ci_if_error: false
 
-      - name: Upload clover artifact for Coveralls
+      - name: Upload clover artifact
         uses: actions/upload-artifact@v4
         with:
           name: clover-${{ matrix.php-version }}-${{ matrix.dependencies }}
@@ -83,4 +83,7 @@ jobs:
       - name: Install php-coveralls
         run: composer global require php-coveralls/php-coveralls
 
-      -
+      - name: Upload coverage results to Coveralls
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: php-coveralls --coverage_clover="build/logs/clover-*/clover.xml" -v
