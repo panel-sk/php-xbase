@@ -46,7 +46,7 @@ jobs:
 
       - name: Install Codeclimate binary
         run: |
-          curl -L https://github.com/codeclimate/test-reporter/releases/latest/download/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+          curl -L -f https://codeclimate.com/downloads/test-reporter/test-reporter-0.11.1-linux-amd64 > ./cc-test-reporter
           chmod +x ./cc-test-reporter
 
       - name: Run Codeclimate before-build
